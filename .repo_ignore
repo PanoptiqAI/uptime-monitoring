@@ -1,0 +1,118 @@
+# Package manager caches
+**/node_modules/
+**/.npm/
+**/.yarn/
+**/.pnp/
+**/pnpm-lock.yaml
+**/package-lock.json
+**/yarn.lock
+
+# Build caches and artifacts
+**/.turbo/
+**/.next/
+**/.expo/
+**/.expo-shared/
+**/.cache/
+**/dist/
+**/build/
+**/android/app/build/
+**/ios/build/
+**/android/app/release/
+
+# IDE and Editor caches
+**/.idea/
+**/.vscode/
+**/*.swp
+**/*.swo
+**/*~
+**/*.log
+
+# Temporary and backup files
+**/*.tmp
+**/*.temp
+**/*.bak
+**/*.pid
+**/*.seed
+**/debug.log
+
+# Lock files
+**/pnpm-lock.yaml
+**/package-lock.json
+**/yarn.lock
+
+# Generated files
+**/generated/
+**/__generated__/
+**/__tests__/__snapshots__/
+**/coverage/
+**/*.meta
+**/*.snap
+
+# Environmental and secret files
+**/.env*
+**/.sentry
+**/.vercel/
+
+# Binary and media files (not text-based)
+**/*.jpg
+**/*.jpeg
+**/*.png
+**/*.gif
+**/*.bmp
+**/*.tiff
+**/*.ico
+**/*.svg
+**/*.webp
+**/*.mp4
+**/*.mp3
+**/*.wav
+**/*.avi
+**/*.mov
+**/*.mkv
+**/*.heic
+**/*.pdf
+**/*.docx
+**/*.xlsx
+**/*.pptx
+**/*.zip
+**/*.tar.gz
+**/*.7z
+
+# Minified and compressed files
+**/*.min.js
+**/*.min.css
+**/*.gz
+**/*.br
+
+# Dataset and data files (if not explicitly required)
+**/*.csv
+**/*.xml
+**/*.sqlite
+**/*.db
+
+# Machine-specific files
+.DS_Store
+Thumbs.db
+
+# Next.js specific
+**/.next/
+**/next-env.d.ts
+
+# React Native and Expo specific
+**/.expo/
+**/.expo-shared/
+**/android/.gradle/
+**/ios/Pods/
+**/ios/build/
+
+# CI/CD and logs
+**/npm-debug.log*
+**/pnpm-debug.log*
+**/.nyc_output/
+**/test-results/
+
+# Miscellaneous
+*.app
+*.coverage
+*.out
+*.sql

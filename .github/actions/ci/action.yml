@@ -1,0 +1,32 @@
+name: 'CI'
+description: 'Run CI validation including linting, type checking, and tests'
+
+inputs:
+  turbo-token:
+    description: 'Turbo token'
+    required: true
+  turbo-team:
+    description: 'Turbo team'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Validate workspace
+      shell: bash
+      run: |
+        if [ ! -f "package.json" ]; then
+          echo "❌ No package.json found - ensure repository is checked out"
+          exit 1
+        fi
+        if [ ! -f "pnpm-lock.yaml" ]; then
+          echo "❌ No pnpm-lock.yaml found - ensure repository is properly set up"
+          exit 1
+        fi
+
+    - name: Verify packages
+      shell: bash
+      run: pnpm run verify
+      env:
+        TURBO_TOKEN: ${{ inputs.turbo-token }}
+        TURBO_TEAM: ${{ inputs.turbo-team }}

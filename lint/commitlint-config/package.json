@@ -1,0 +1,34 @@
+{
+  "name": "@panoptiq/commitlint-config",
+  "version": "0.1.0",
+  "scripts": {
+    "commitlint": "commitlint",
+    "lint": "pnpm biome lint . && pnpm biome check .",
+    "lint:knip": "knip",
+    "test": "echo \"No tests yet\"",
+    "typecheck": "tsc --noEmit",
+    "verify": "concurrently \"pnpm typecheck\" \"pnpm lint:knip\" \"pnpm test\" \"pnpm lint\""
+  },
+  "peerDependencies": {
+    "@commitlint/lint": "18.6.1",
+    "@commitlint/load": "18.6.1",
+    "@commitlint/types": "18.6.1"
+  },
+  "dependencies": {
+    "@commitlint/config-conventional": "18.6.3",
+    "@commitlint/lint": "18.6.1",
+    "@commitlint/load": "18.6.1",
+    "@commitlint/types": "18.6.1"
+  },
+  "devDependencies": {
+    "@panoptiq/tsconfig": "workspace:*",
+    "concurrently": "9.1.2",
+    "knip": "5.52.0",
+    "typescript": "5.7.3"
+  },
+  "files": [
+    "index.js"
+  ],
+  "main": "index.js",
+  "private": true
+}

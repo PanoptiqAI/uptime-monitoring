@@ -1,0 +1,8 @@
+packages:
+  - 'apps/**/**'
+  - '!apps/**/.*'
+  - 'platform/**/**'
+  - '!platform/**/.*'
+  - 'lint/**'
+  - 'packages/**'
+  - '!packages/**/.*'

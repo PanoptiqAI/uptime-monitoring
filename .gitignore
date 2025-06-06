@@ -1,0 +1,142 @@
+# Monorepo
+apps/*/credentials.json
+apps/*/build
+packages/*/build
+
+# Test coverage
+coverage/
+
+# Turborepo
+.turbo
+
+# Expo
+.expo
+__generated__
+web-build
+
+# macOS
+.DS_Store
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+.pnpm-debug.log
+package-lock.json
+
+# Ruby
+.direnv
+
+# Emacs
+*~
+
+# Vim
+.*.swp
+.*.swo
+.*.swn
+.*.swm
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Xcode
+*.pbxuser
+!default.pbxuser
+*.xccheckout
+*.xcscmblueprint
+xcuserdata
+
+# Android Studio
+*.iml
+.gradle
+.idea/libraries
+.idea/workspace.xml
+.idea/gradle.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+
+# Eclipse
+.project
+.settings
+
+# VSCode
+.history/
+
+# temp
+.expo-shared
+.next
+next-env.d.ts
+build
+dist
+playwright-report
+*.tsbuildinfo
+test-results
+out/
+.parcel-cache/
+/platform/services/gateway/app/bundle
+# Python virtual environment
+.venv
+/certificates
+.env*
+*.env*
+
+kubeconfig.json
+
+!/BUILD
+__pycache__
+.pdm-python
+.ruff_cache
+.pants.d
+.pytest_cache
+.mypy_cache
+/apps/fusion/front-end/native/android
+/apps/fusion/front-end/native/ios
+*.ipa
+*.apk
+Pods
+mprocs.log
+*.tar.gz
+*.snap
+*.app
+.aider*
+*.log
+flagsmith.json
+/apps/landingpage/front-end/web/playwright/.auth
+/apps/studio/front-end/web/playwright/.auth
+.sentry
+.vercel
+repomix-output.txt
+
+*storybook.log
+
+# Ignore all .ply files in the data directory
+data/**/*.ply
+
+# Don't ignore the data directory itself
+!data/
+!data/.gitkeep
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Log files
+*.log
+logs/
+
+.debug/
+.repomix-output.txt
+.repomix-plan-files.txt

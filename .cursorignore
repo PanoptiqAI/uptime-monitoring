@@ -1,0 +1,44 @@
+# Add directories or file patterns to ignore during indexing (e.g. foo/ or *.csv)
+# Monorepo
+credentials.json
+
+build
+
+# Turborepo
+.turbo
+
+# Expo
+.expo
+__generated__
+web-build
+
+# macOS
+.DS_Store
+
+# Node
+node_modules
+
+
+# Ruby
+.direnv
+
+.expo-shared
+.next
+next-env.d.ts
+build
+dist
+playwright-report
+*.tsbuildinfo
+test-results
+out/
+.parcel-cache/
+/platform/services/gateway/app/bundle
+# Python virtual environment
+.venv
+/certificates
+.env
+
+kubeconfig.json
+
+.sentry
+.vercel

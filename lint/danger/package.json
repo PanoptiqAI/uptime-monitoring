@@ -1,0 +1,29 @@
+{
+  "name": "@panoptiq/danger",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "tsc",
+    "lint": "pnpm biome lint . && pnpm biome check .",
+    "lint:knip": "knip",
+    "prebuild": "rimraf dist",
+    "start": "danger ci --dangerfile src/dangerfile.ts",
+    "start:pr": "danger pr --dangerfile src/dangerfile.ts",
+    "test": "echo \"No tests yet\"",
+    "typecheck": "tsc --noEmit",
+    "verify": "concurrently \"pnpm typecheck\" \"pnpm lint:knip\" \"pnpm test\" \"pnpm lint\""
+  },
+  "dependencies": {
+    "@commitlint/lint": "18.6.1",
+    "@commitlint/load": "18.6.1",
+    "@commitlint/types": "18.6.1",
+    "danger": "12.3.4"
+  },
+  "devDependencies": {
+    "@panoptiq/commitlint-config": "workspace:*",
+    "concurrently": "9.1.2",
+    "knip": "5.52.0",
+    "rimraf": "6.0.1",
+    "typescript": "5.7.3"
+  },
+  "private": true
+}

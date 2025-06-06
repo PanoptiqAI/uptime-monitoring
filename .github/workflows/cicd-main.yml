@@ -1,0 +1,41 @@
+name: CICD (main)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  FORCE_COLOR: 3
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
+jobs:
+  cicd:
+    name: CICD Pipeline
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    concurrency:
+      group: cicd-main-${{ github.sha }}
+      cancel-in-progress: false
+    outputs:
+      should-deploy: ${{ steps.deployment-gate.outputs.proceed }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          lfs: true
+
+      - name: Setup monorepo
+        uses: ./.github/actions/setup
+        with:
+          enable-expo-setup: false
+
+      # CI phase
+      - name: Run CI
+        uses: ./.github/actions/ci
+        with:
+          turbo-token: ${{ secrets.TURBO_TOKEN }}
+          turbo-team: ${{ vars.TURBO_TEAM }}

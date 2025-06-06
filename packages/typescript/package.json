@@ -1,0 +1,20 @@
+{
+  "name": "@panoptiq/tsconfig",
+  "version": "0.1.0",
+  "scripts": {
+    "clean": "rm -rf .turbo node_modules",
+    "lint": "pnpm biome lint . && pnpm biome check .",
+    "lint:knip": "knip",
+    "test": "echo \"No tests yet\"",
+    "typecheck": "echo \"No TypeScript files to check\"",
+    "verify": "concurrently \"pnpm typecheck\" \"pnpm lint:knip\" \"pnpm test\" \"pnpm lint\""
+  },
+  "devDependencies": {
+    "concurrently": "9.1.2",
+    "knip": "5.52.0"
+  },
+  "files": [
+    "*.json"
+  ],
+  "private": true
+}

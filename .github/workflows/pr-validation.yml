@@ -1,0 +1,36 @@
+name: PR Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+env:
+  FORCE_COLOR: 3
+
+jobs:
+  danger:
+    name: Validate PR using Danger
+    runs-on: blacksmith-4vcpu-ubuntu-2204
+    timeout-minutes: 5
+    # Skip validation for release-please automated PRs
+    if: ${{ !startsWith(github.head_ref, 'release-please') }}
+    permissions:
+      pull-requests: write
+      contents: write
+      statuses: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Setup monorepo
+        uses: ./.github/actions/setup
+
+      - name: Run danger
+        working-directory: lint/danger
+        run: |
+          pnpm run start
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

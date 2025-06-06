@@ -1,0 +1,94 @@
+name: CI (PR)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  FORCE_COLOR: 3
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
+jobs:
+  # Skip workflow if the last commit contains [skip ci]
+  check-skip:
+    name: Check if workflow should be skipped
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: check
+        run: |
+          if git log -1 --pretty=%B | grep -q '\[skip ci\]'; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+  changes:
+    name: Detect changes
+    needs: [check-skip]
+    if: needs.check-skip.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      dependencies: ${{ steps.filter.outputs.dependencies }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            dependencies:
+              - '**/package.json'
+              - '**/pnpm-lock.yaml'
+              - '**/requirements.txt'
+              - '**/pyproject.toml'
+              - '**/Cargo.toml'
+              - '**/Cargo.lock'
+
+  ci:
+    name: CI
+    needs: [check-skip]
+    if: needs.check-skip.outputs.skip != 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup monorepo
+        uses: ./.github/actions/setup
+        with:
+          enable-expo-setup: false
+
+      - name: Run CI
+        uses: ./.github/actions/ci
+        with:
+          turbo-token: ${{ secrets.TURBO_TOKEN }}
+          turbo-team: ${{ vars.TURBO_TEAM }}
+
+  fossa:
+    name: FOSSA
+    needs: [check-skip, changes]
+    if: |
+      needs.check-skip.outputs.skip != 'true' &&
+      needs.changes.outputs.dependencies == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run FOSSA scan and upload build data
+        uses: fossa-contrib/fossa-action@v3
+        with:
+          fossa-api-key: ${{ secrets.FOSSA_API_KEY }}

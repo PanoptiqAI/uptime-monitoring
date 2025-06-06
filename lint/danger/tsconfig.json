@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "target": "esnext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "skipLibCheck": true,
+    "outDir": "dist"
+  }
+}

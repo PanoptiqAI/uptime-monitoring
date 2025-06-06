@@ -1,0 +1,15 @@
+name: 'Health Check'
+description: 'Run health checks against monitoring targets'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Playwright browsers
+      shell: bash
+      run: pnpm run playwright:install
+
+    - name: Run health checks
+      shell: bash
+      run: |
+        echo "🏥 Running health checks..."
+        pnpm run healthcheck

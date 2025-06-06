@@ -1,0 +1,81 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.3/schema.json",
+  "vcs": {
+    "enabled": false,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "ignore": [
+      "**/*.bin",
+      "**/*.md",
+      "**/*.wasm",
+      "**/.claude/",
+      "**/.claude/**",
+      "**/.storybook/storybook.requires.ts",
+      "**/.turbo",
+      "**/.vercel/**",
+      "**/.vercel/output/**",
+      "**/_generated/**",
+      "**/build",
+      "**/coverage",
+      "**/coverage/**",
+      "**/dist",
+      "**/generated/**",
+      "**/node_modules",
+      "**/public",
+      "*.app",
+      "*.tar.gz",
+      ".vscode/spellright.dict"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "useEditorconfig": true
+  },
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "correctness": {
+        "noUnusedVariables": "error"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noUselessElse": "off",
+            "noUnusedTemplateLiteral": "off"
+          },
+          "complexity": {
+            "noUselessFragments": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": ["**/package.json"],
+      "formatter": {
+        "enabled": false
+      },
+      "linter": {
+        "enabled": false
+      }
+    }
+  ],
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single"
+    }
+  }
+}

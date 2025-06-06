@@ -1,0 +1,229 @@
+{
+  "$schema": "https://turborepo.org/schema.json",
+  "ui": "stream",
+  "tasks": {
+    "topo": {
+      "dependsOn": ["^topo"]
+    },
+    "@panoptiq/healthcheck#typecheck": {
+      "dependsOn": ["^build"],
+      "inputs": ["tests/**/*.{ts,tsx}", "tsconfig.json", "package.json"],
+      "outputs": []
+    },
+    "@panoptiq/danger#typecheck": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**/*.{ts,tsx}", "tsconfig.json", "package.json"],
+      "outputs": []
+    },
+    "build": {
+      "cache": true,
+      "dependsOn": ["^build", "topo"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/.turbo/**",
+        "!**/.vercel/**",
+        "!**/dist/**",
+        "!**/build/**",
+        "!**/coverage/**",
+        "!**/*.test.*",
+        "!**/*.spec.*",
+        "!**/__tests__/**",
+        "!**/test/**",
+        "!**/tests/**",
+        "!**/e2e/**",
+        "!**/*.md",
+        "!**/node_modules/**",
+        "!**/.react-email/**",
+        "!**/convex/_generated/**",
+        "!**/playwright-report/**",
+        "!**/test-results/**"
+      ],
+      "env": ["NODE_ENV"],
+      "outputs": [
+        ".vercel/output/**",
+        "build/**",
+        "dist/**",
+        "convex/_generated/**",
+        ".react-email/**",
+        ".output/**"
+      ]
+    },
+    "lint": {
+      "dependsOn": ["^build", "build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "biome.json",
+        ".eslintrc*",
+        "!**/node_modules/**",
+        "!**/dist/**",
+        "!**/build/**",
+        "!**/coverage/**"
+      ],
+      "outputs": []
+    },
+    "lint:knip": {
+      "dependsOn": ["^build", "build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "knip.config.ts",
+        "knip.json",
+        "package.json",
+        "tsconfig*.json",
+        "!**/node_modules/**",
+        "!**/dist/**",
+        "!**/build/**",
+        "!**/coverage/**",
+        "!**/.turbo/**",
+        "!**/playwright-report/**",
+        "!**/test-results/**"
+      ],
+      "outputs": [],
+      "env": ["NODE_ENV"]
+    },
+    "check-circular": {
+      "dependsOn": ["^build", "build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/node_modules/**",
+        "!**/dist/**",
+        "!**/build/**",
+        "!**/*.test.{ts,tsx,js,jsx}",
+        "!**/*.spec.{ts,tsx,js,jsx}"
+      ],
+      "outputs": []
+    },
+    "format": {
+      "dependsOn": ["^build", "build"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": [],
+      "cache": false
+    },
+    "typecheck": {
+      "dependsOn": ["^build", "build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.test.{ts,tsx}",
+        "!**/*.spec.{ts,tsx}",
+        "!**/node_modules/**",
+        "!**/dist/**",
+        "!**/build/**",
+        "!**/coverage/**"
+      ],
+      "outputs": ["node_modules/.cache/tsbuildinfo.json"]
+    },
+    "test": {
+      "dependsOn": ["^build", "build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "**/vitest.config.*",
+        "**/jest.config.*",
+        "**/vitest-setup.ts",
+        "!**/node_modules/**",
+        "!**/dist/**",
+        "!**/build/**",
+        "!**/coverage/**"
+      ],
+      "outputs": ["coverage/**", ".coverage/**"]
+    },
+    "test:coverage": {
+      "dependsOn": ["^build", "build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "**/vitest.config.*",
+        "**/jest.config.*",
+        "**/vitest-setup.ts",
+        "!**/node_modules/**",
+        "!**/dist/**",
+        "!**/build/**",
+        "!**/coverage/**"
+      ],
+      "outputs": ["coverage/**", ".coverage/**"]
+    },
+    "e2e": {
+      "dependsOn": ["^build", "build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "**/playwright.config.ts",
+        "!**/node_modules/**",
+        "!**/dist/**",
+        "!**/build/**"
+      ],
+      "outputs": ["playwright-report/**", "test-results/**", ".test/**"]
+    },
+    "healthcheck": {
+      "cache": false,
+      "inputs": ["**/playwright.config.ts"],
+      "outputs": ["playwright-report/**", "test-results/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "syncpack-lint": {
+      "cache": true,
+      "inputs": [
+        "**/package.json",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml"
+      ],
+      "outputs": []
+    },
+    "syncpack:fix": {
+      "cache": false,
+      "inputs": [
+        "**/package.json",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml"
+      ],
+      "outputs": []
+    },
+    "lint:yaml": {
+      "cache": true,
+      "inputs": [".github/workflows/*.yml"],
+      "outputs": []
+    },
+    "lint:biome": {
+      "dependsOn": ["syncpack-lint"],
+      "cache": true,
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/node_modules/**",
+        "!**/dist/**",
+        "!**/build/**",
+        "!**/coverage/**"
+      ],
+      "outputs": []
+    },
+    "knip": {
+      "dependsOn": ["^build", "build"],
+      "inputs": [
+        "**/*.{ts,tsx,js,jsx,json}",
+        "knip.config.ts",
+        "knip.json",
+        "tsconfig*.json",
+        "package.json",
+        "!**/node_modules/**",
+        "!**/dist/**",
+        "!**/build/**",
+        "!**/coverage/**"
+      ],
+      "outputs": []
+    },
+    "verify": {
+      "dependsOn": [
+        "typecheck",
+        "lint",
+        "lint:knip",
+        "test:coverage",
+        "check-circular"
+      ],
+      "inputs": [],
+      "outputs": []
+    }
+  },
+  "globalPassThroughEnv": [
+    "NODE_ENV"
+  ]
+}

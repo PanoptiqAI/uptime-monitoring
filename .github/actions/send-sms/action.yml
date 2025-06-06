@@ -1,0 +1,32 @@
+name: 'Send SMS Notification'
+description: 'Send SMS notification via Twilio'
+inputs:
+  message:
+    description: 'Message to send'
+    required: true
+  to-phone:
+    description: 'Phone number to send to'
+    required: true
+  from-phone:
+    description: 'Twilio phone number to send from'
+    required: true
+  twilio-account-sid:
+    description: 'Twilio Account SID'
+    required: true
+  twilio-auth-token:
+    description: 'Twilio Auth Token'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Send SMS
+      shell: bash
+      run: |
+        npx twilio-cli@5.23.1 api:core:messages:create \
+          --from "${{ inputs.from-phone }}" \
+          --to "${{ inputs.to-phone }}" \
+          --body "${{ inputs.message }}"
+      env:
+        TWILIO_ACCOUNT_SID: ${{ inputs.twilio-account-sid }}
+        TWILIO_AUTH_TOKEN: ${{ inputs.twilio-auth-token }}

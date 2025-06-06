@@ -1,0 +1,22 @@
+name: Setup Monorepo
+description: Coordinates the setup of JavaScript environment for the monorepo
+
+inputs:
+  node-version:
+    description: Version of Node to use
+    default: 22.16.0
+    required: false
+
+  pnpm-version:
+    description: Version of pnpm to use
+    default: 10.11.0
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Setup JavaScript environment
+      uses: ./.github/actions/setup-js
+      with:
+        node-version: ${{ inputs.node-version }}
+        pnpm-version: ${{ inputs.pnpm-version }}

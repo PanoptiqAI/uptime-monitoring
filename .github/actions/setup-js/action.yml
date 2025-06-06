@@ -1,0 +1,66 @@
+name: Setup JavaScript Environment
+description: Set up Node.js, pnpm, and install dependencies
+
+inputs:
+  node-version:
+    description: Version of Node to use
+    default: 22.16.0
+    required: false
+
+  pnpm-version:
+    description: Version of pnpm to use
+    default: 10.11.0
+    required: false
+
+
+runs:
+  using: composite
+  steps:
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: ${{ inputs.pnpm-version }}
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: pnpm
+
+    - name: Get pnpm store directory
+      id: pnpm-cache
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Install dependencies
+      run: |
+        echo "Installing JavaScript dependencies without postinstall scripts..."
+        pnpm install --frozen-lockfile --ignore-scripts
+      shell: bash
+
+    - name: Restore Turborepo cache
+      uses: actions/cache@v4
+      with:
+        key: turbo-${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          turbo-${{ runner.os }}-pnpm-
+        path: |
+          node_modules/.cache/turbo
+
+    - name: Cache Playwright binaries
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-playwright-

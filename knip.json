@@ -1,0 +1,29 @@
+{
+  "ignoreWorkspaces": ["apps/fusion/front-end/native"],
+  "workspaces": {
+    ".": {
+      "entry": "scripts/**/*.js",
+      "project": "scripts/**/*.{js,ts}"
+    },
+    "apps/*": {
+      "entry": "src/index.{js,ts,tsx}",
+      "project": "**/*.{js,ts,tsx}"
+    },
+    "apps/*/front-end/*": {
+      "entry": "src/index.{js,ts,tsx}",
+      "project": "**/*.{js,ts,tsx}"
+    },
+    "platform/*": {
+      "entry": "src/index.{js,ts}",
+      "project": "**/*.{js,ts}"
+    },
+    "packages/*": {
+      "entry": "src/index.{js,ts,tsx}",
+      "project": "**/*.{js,ts,tsx}"
+    },
+    "lint/*": {
+      "entry": "index.{js,ts}",
+      "project": "**/*.{js,ts}"
+    }
+  }
+}

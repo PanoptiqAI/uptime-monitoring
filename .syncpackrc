@@ -1,0 +1,93 @@
+{
+  "sortFirst": [
+    "name",
+    "version",
+    "scripts",
+    "resolutions",
+    "peerDependencies"
+  ],
+  "sortPackages": true,
+  "sortExports": [
+    "types",
+    "node-addons",
+    "node",
+    "browser",
+    "react-native",
+    "source",
+    "development",
+    "production",
+    "import",
+    "require",
+    "default"
+  ],
+  "semverGroups": [
+    {
+      "label": "Use exact version numbers",
+      "packages": [
+        "**"
+      ],
+      "dependencyTypes": [
+        "dev",
+        "prod"
+      ],
+      "dependencies": [
+        "**"
+      ],
+      "specifierTypes": [
+        "exact",
+        "latest",
+        "range"
+      ],
+      "range": ""
+    }
+  ],
+  "versionGroups": [
+    {
+      "packages": [
+        "**"
+      ],
+      "dependencies": [
+        "typescript"
+      ],
+      "strategy": "ignore"
+    },
+    {
+      "packages": [
+        "**"
+      ],
+      "dependencies": [
+        "@commitlint/**"
+      ],
+      "policy": "sameRange"
+    },
+    {
+      "label": "Make sure packages share the same version of dependencies",
+      "packages": [
+        "**"
+      ],
+      "dependencyTypes": [
+        "dev",
+        "prod"
+      ],
+      "dependencies": [
+        "next",
+        "react",
+        "jest",
+        "react-native",
+        "react-native-web",
+        "react-dom"
+      ]
+    },
+    {
+      "label": "Use workspace protocol when developing local packages",
+      "dependencies": [
+        "$LOCAL"
+      ],
+      "dependencyTypes": [
+        "dev",
+        "prod"
+      ],
+      "pinVersion": "workspace:*"
+    }
+  ]
+}

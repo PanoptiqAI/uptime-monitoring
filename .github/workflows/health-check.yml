@@ -1,0 +1,39 @@
+name: Health Check
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'  # Every 10 minutes
+  workflow_dispatch:
+
+env:
+  FORCE_COLOR: 3
+
+jobs:
+  uptime:
+    name: Uptime
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup monorepo
+        uses: ./.github/actions/setup
+        with:
+          enable-expo-setup: false
+
+      - name: Run health checks
+        id: health-check
+        uses: ./.github/actions/health-check
+
+      - name: Send SMS notification on failure
+        if: failure()
+        uses: ./.github/actions/send-sms
+        with:
+          message: "🚨 ALERT: Uptime monitoring failed. Please investigate immediately. Run: ${{ github.run_id }}"
+          to-phone: ${{ secrets.ADMIN_PHONE_NUMBER }}
+          from-phone: ${{ secrets.TWILIO_FROM_PHONE_NUMBER }}
+          twilio-account-sid: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          twilio-auth-token: ${{ secrets.TWILIO_AUTH_TOKEN }}
