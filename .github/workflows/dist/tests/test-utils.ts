@@ -22,6 +22,12 @@ const NON_CRITICAL_ERROR_PATTERNS = [
   /401.*\(\)/i,
   /failed.*to.*load.*resource.*401/i,
   /initFromEdgeConfig/i,
+  /hypertune.*failed/i,
+  /hypertune.*edge.*failed/i,
+  /initialize.*from.*hypertune.*edge.*failed/i,
+  /failed.*to.*initialize.*from.*hypertune.*edge/i,
+  /initialize.*from.*edge.*failed/i,
+  /all.*attempts.*to.*initialize.*from.*hypertune.*edge.*failed/i,
 ] as const;
 
 interface RequestOptions {
