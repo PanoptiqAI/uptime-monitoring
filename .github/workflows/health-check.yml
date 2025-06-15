@@ -142,7 +142,7 @@ jobs:
           cd .github/workflows/dist && node ../extract-ctrf-metadata.js
 
       - name: Send SMS notification on test failure
-        if: failure() && steps.previous-status.outputs.current != env.HEALTH_STATUS_UNHEALTHY
+        if: failure() && steps.previous-status.outputs.current != env.HEALTH_STATUS_UNHEALTHY && vars.MUTE_SMS_NOTIFICATIONS != 'true'
         run: |
           npx twilio-cli@5.23.1 api:core:messages:create \
             --from "${{ secrets.TWILIO_FROM_PHONE_NUMBER }}" \
@@ -167,7 +167,7 @@ jobs:
           cd .github/workflows/dist && node ../extract-ctrf-metadata.js
 
       - name: Send SMS notification on test recovery
-        if: success() && steps.previous-status.outputs.current == env.HEALTH_STATUS_UNHEALTHY
+        if: success() && steps.previous-status.outputs.current == env.HEALTH_STATUS_UNHEALTHY && vars.MUTE_SMS_NOTIFICATIONS != 'true'
         run: |
           npx twilio-cli@5.23.1 api:core:messages:create \
             --from "${{ secrets.TWILIO_FROM_PHONE_NUMBER }}" \
