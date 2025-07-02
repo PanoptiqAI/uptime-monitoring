@@ -49,6 +49,7 @@ var playwright_config_default = (0, import_test.defineConfig)({
       name: "chromium",
       use: {
         ...import_test.devices["Desktop Chrome"],
+        // Disable GPU to avoid issues with missing hardware acceleration on CI
         launchOptions: {
           args: [
             "--disable-gpu",

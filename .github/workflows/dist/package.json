@@ -1,6 +1,6 @@
 {
   "name": "healthcheck-dist",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": true,
   "dependencies": {
     "@playwright/test": "1.46.1",

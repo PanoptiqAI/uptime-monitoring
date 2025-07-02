@@ -12,7 +12,7 @@ const LANDING_CONFIG: PageConfig = {
   customValidations: true,
 };
 
-/** Marketing landing page - checks for "Showcase your" text + Panoptiq logo */
+/** Marketing landing page - checks for "Visualise and collaborate in 3D" text + Panoptiq logo */
 export class LandingPage extends BasePage {
   constructor(page: Page) {
     super(page, LANDING_CONFIG);
@@ -22,8 +22,8 @@ export class LandingPage extends BasePage {
    * Simple validation: check for specific text and logo
    */
   protected override async validatePageSpecific(): Promise<void> {
-    // Check for "Showcase your" text
-    await expect(this.page.locator('text="Showcase your"')).toBeVisible({
+    // Check for "Visualise and collaborate in 3D" text
+    await expect(this.page.locator('text="Visualise and collaborate in 3D"')).toBeVisible({
       timeout: 10000,
     });
 
@@ -32,6 +32,6 @@ export class LandingPage extends BasePage {
       timeout: 10000,
     });
 
-    this.logResult('Found "Showcase your" text and Panoptiq logo');
+    this.logResult('Found "Visualise and collaborate in 3D" text and Panoptiq logo');
   }
 }
