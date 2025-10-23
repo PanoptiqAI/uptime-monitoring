@@ -1,0 +1,277 @@
+name: Health Check
+
+on:
+  # schedule:
+  #   - cron: '*/15 * * * *'  # Every 15 minutes
+  workflow_dispatch:
+
+env:
+  FORCE_COLOR: 3
+  HEALTH_STATUS_HEALTHY: "healthy"
+  HEALTH_STATUS_UNHEALTHY: "unhealthy"
+  HEALTH_STATUS_UNKNOWN: "unknown"
+  # Production environment variables (inline from package.json)
+  PANOPTIQ_CORE_API_HEALTHZ_URL: https://chttp.panoptiq.ai/healthz
+  PANOPTIQ_EMBED_DEMO_URL: https://studio.panoptiq.ai/en/experiences/embed/qh79fsny7p6kkx22n8vnv1m6fh7gx8cb
+  PANOPTIQ_LANDING_HEALTHZ_URL: https://www.panoptiq.ai/healthz
+  PANOPTIQ_LANDING_URL: https://www.panoptiq.ai
+  PANOPTIQ_STATUS_URL: https://status.panoptiq.ai
+  PANOPTIQ_STUDIO_EXPLORE_URL: https://studio.panoptiq.ai/explore
+  PANOPTIQ_STUDIO_HEALTHZ_URL: https://studio.panoptiq.ai/healthz
+  PANOPTIQ_STUDIO_ORG_URL: https://studio.panoptiq.ai/en/org/panoptiq
+  PANOPTIQ_STUDIO_URL: https://studio.panoptiq.ai
+  PANOPTIQ_STUDIO_USERS_URL: https://studio.panoptiq.ai/en/users/panoptiq
+
+jobs:
+  discover-tests:
+    name: Discover Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      test-matrix: ${{ steps.list-tests.outputs.tests }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: List test files using CLI
+        id: list-tests
+        run: |
+          TESTS=$(node .github/workflows/dist/cli.js list-tests)
+          echo "tests=$TESTS" >> $GITHUB_OUTPUT
+          echo "Discovered tests: $TESTS"
+
+  run-tests:
+    name: Test ${{ matrix.test }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: discover-tests
+    permissions:
+      contents: read
+      actions: write
+    strategy:
+      fail-fast: false
+      matrix:
+        test: ${{ fromJson(needs.discover-tests.outputs.test-matrix) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: '.github/workflows/dist/package-lock.json'
+
+      - name: Install packages
+        run: cd .github/workflows/dist && npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('.github/workflows/dist/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Install Playwright
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright@1.46.1 install --with-deps chromium
+
+      - name: Install Playwright dependencies only
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright@1.46.1 install-deps chromium
+
+      - name: Get previous test status
+        id: previous-status
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          TEST_NAME: ${{ matrix.test }}
+        run: |
+          # Dynamically construct the variable name
+          TEST_VAR="HEALTH_STATUS_$(echo "$TEST_NAME" | tr '[:lower:]' '[:upper:]')"
+
+          # Try to get the current status from GitHub variables
+          if [ -n "$GH_TOKEN" ] && command -v gh >/dev/null 2>&1; then
+            CURRENT_STATUS=$(gh variable list --repo "${{ github.repository }}" --json name,value -q ".[] | select(.name==\"$TEST_VAR\") | .value" 2>/dev/null || echo "${{ env.HEALTH_STATUS_UNKNOWN }}")
+          else
+            CURRENT_STATUS="${{ env.HEALTH_STATUS_UNKNOWN }}"
+          fi
+
+          # Fallback to unknown if empty
+          CURRENT_STATUS="${CURRENT_STATUS:-${{ env.HEALTH_STATUS_UNKNOWN }}}"
+
+          echo "current=$CURRENT_STATUS" >> $GITHUB_OUTPUT
+          echo "Previous $TEST_NAME status: $CURRENT_STATUS"
+
+      - name: Run ${{ matrix.test }} health check
+        run: |
+          echo "🏥 Running health check: ${{ matrix.test }}"
+          cd .github/workflows/dist && node cli.js run-test ${{ matrix.test }}
+
+      - name: Update test status to success
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          TEST_NAME: ${{ matrix.test }}
+        run: |
+          TEST_VAR="HEALTH_STATUS_$(echo "$TEST_NAME" | tr '[:lower:]' '[:upper:]')"
+          echo "$TEST_NAME health check passed"
+          if [ -n "$GH_TOKEN" ]; then
+            gh variable set "$TEST_VAR" --body="${{ env.HEALTH_STATUS_HEALTHY }}" --repo "${{ github.repository }}" || echo "Warning: Failed to update $TEST_VAR variable"
+          fi
+
+      - name: Update test status to failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          TEST_NAME: ${{ matrix.test }}
+        run: |
+          TEST_VAR="HEALTH_STATUS_$(echo "$TEST_NAME" | tr '[:lower:]' '[:upper:]')"
+          echo "$TEST_NAME health check failed"
+          if [ -n "$GH_TOKEN" ]; then
+            gh variable set "$TEST_VAR" --body="${{ env.HEALTH_STATUS_UNHEALTHY }}" --repo "${{ github.repository }}" || echo "Warning: Failed to update $TEST_VAR variable"
+          fi
+
+      - name: Extract test metadata for SMS
+        if: failure() && steps.previous-status.outputs.current != env.HEALTH_STATUS_UNHEALTHY
+        id: extract-metadata
+        run: |
+          echo "🔍 Extracting metadata from CTRF report for failed test: ${{ matrix.test }}"
+          cd .github/workflows/dist && node ../extract-ctrf-metadata.js
+
+      - name: Send SMS notification on test failure
+        if: failure() && steps.previous-status.outputs.current != env.HEALTH_STATUS_UNHEALTHY && vars.MUTE_SMS_NOTIFICATIONS != 'true'
+        run: |
+          npx twilio-cli@5.23.1 api:core:messages:create \
+            --from "${{ secrets.TWILIO_FROM_PHONE_NUMBER }}" \
+            --to "${{ secrets.ADMIN_PHONE_NUMBER }}" \
+            --body "🚨 HEALTH CHECK FAILED: ${{ matrix.test }}
+
+          The ${{ matrix.test }} health check is FAILING
+          Target URL: ${{ steps.extract-metadata.outputs.target_url || 'Unknown' }}
+
+          ${{ steps.extract-metadata.outputs.error_message && format('Error: {0}', steps.extract-metadata.outputs.error_message) || '' }}
+
+          GitHub Actions: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+
+      - name: Extract test metadata for recovery SMS
+        if: success() && steps.previous-status.outputs.current == env.HEALTH_STATUS_UNHEALTHY
+        id: extract-metadata-recovery
+        run: |
+          echo "🔍 Extracting metadata from CTRF report for recovered test: ${{ matrix.test }}"
+          cd .github/workflows/dist && node ../extract-ctrf-metadata.js
+
+      - name: Send SMS notification on test recovery
+        if: success() && steps.previous-status.outputs.current == env.HEALTH_STATUS_UNHEALTHY && vars.MUTE_SMS_NOTIFICATIONS != 'true'
+        run: |
+          npx twilio-cli@5.23.1 api:core:messages:create \
+            --from "${{ secrets.TWILIO_FROM_PHONE_NUMBER }}" \
+            --to "${{ secrets.ADMIN_PHONE_NUMBER }}" \
+            --body "✅ HEALTH CHECK RECOVERED: ${{ matrix.test }}
+
+          The ${{ matrix.test }} health check is now PASSING
+          Target URL: ${{ steps.extract-metadata-recovery.outputs.target_url || 'Unknown' }}
+
+          GitHub Actions: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-artifacts-${{ matrix.test }}
+          path: |
+            packages/healthcheck/test-results/
+            packages/healthcheck/playwright-report/
+            packages/healthcheck/*.png
+          retention-days: 7
+
+  aggregate-results:
+    name: Aggregate Results
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [discover-tests, run-tests]
+    if: always()
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get previous health status
+        id: previous-status
+        run: |
+          # Get the current health status from GitHub variables
+          CURRENT_STATUS="${{ vars.HEALTH_STATUS || 'unknown' }}"
+          echo "current=$CURRENT_STATUS" >> $GITHUB_OUTPUT
+          echo "Previous health status: $CURRENT_STATUS"
+
+      - name: Check test results
+        id: check-results
+        run: |
+          # Check if any test jobs failed
+          if [[ "${{ needs.run-tests.result }}" == "failure" ]]; then
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "Some health checks failed"
+          elif [[ "${{ needs.run-tests.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "All health checks passed"
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "Health checks completed with errors"
+          fi
+
+      - name: Update health status to success
+        if: steps.check-results.outputs.status == 'success'
+        run: |
+          echo "NEW_STATUS=${{ env.HEALTH_STATUS_HEALTHY }}" >> $GITHUB_ENV
+          echo "All health checks passed - status: ${{ env.HEALTH_STATUS_HEALTHY }}"
+
+      - name: Update health status to failure
+        if: steps.check-results.outputs.status == 'failure'
+        run: |
+          echo "NEW_STATUS=${{ env.HEALTH_STATUS_UNHEALTHY }}" >> $GITHUB_ENV
+          echo "Some health checks failed - status: ${{ env.HEALTH_STATUS_UNHEALTHY }}"
+
+      # SMS notifications are now handled per-test in the run-tests job
+      # This provides more granular notifications about which specific services are down/recovered
+
+      - name: Update GitHub variable with new status
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -n "$NEW_STATUS" ]; then
+            echo "Updating health status from ${{ steps.previous-status.outputs.current }} to $NEW_STATUS"
+
+            # Fail if GH_PAT is not available
+            if [ -z "$GH_TOKEN" ]; then
+              echo "❌ GH_PAT secret is not available"
+              exit 1
+            fi
+
+            # Update variable and fail if it doesn't work
+            if ! gh variable set HEALTH_STATUS --body="$NEW_STATUS" --repo "${{ github.repository }}"; then
+              echo "❌ Failed to update HEALTH_STATUS variable - check GH_PAT permissions"
+              exit 1
+            fi
+
+            echo "✅ Health status updated to: $NEW_STATUS"
+          else
+            echo "No status change needed"
+          fi
+
+      # Fail the workflow if any tests failed to ensure proper status reporting
+      - name: Final status check
+        if: steps.check-results.outputs.status == 'failure'
+        run: |
+          echo "❌ Health checks failed - failing workflow"
+          exit 1

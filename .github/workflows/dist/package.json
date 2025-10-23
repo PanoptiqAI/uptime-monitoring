@@ -1,0 +1,9 @@
+{
+  "name": "healthcheck-dist",
+  "version": "1.0.6",
+  "private": true,
+  "dependencies": {
+    "@playwright/test": "1.56.1",
+    "playwright-ctrf-json-reporter": "0.0.20"
+  }
+}
